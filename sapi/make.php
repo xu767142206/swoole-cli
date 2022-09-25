@@ -27,7 +27,7 @@ make_<?=$item->name?>() {
     <?=$item->configure?> && \
     <?php endif; ?>
     make -j <?=$this->maxJob?>  <?=$item->makeOptions?> && \
-    make install
+    make install <?=$item->makeInstallOptions?> && \
     cd -
 }
 

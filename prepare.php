@@ -21,10 +21,10 @@ $endCallback = function () {
 };
 
 if ($type == 'macos') {
-    define('WORKSPACE', '/Users/hantianfeng/workspace');
-    $p->setWorkDir(WORKSPACE . '/cli-swoole');
-    $p->setExtraLdflags('-L/usr/lib -undefined dynamic_lookup -lwebp -licudata -licui18n -licuio');
-    $p->setWorkDir(WORKSPACE.'/cli-swoole');
+    define('WORKSPACE', '/Users/sean/Documents/php-work/swoole-cli');
+    // $p->setWorkDir(WORKSPACE . '/cli-swoole');
+    // $p->setExtraLdflags('-L/usr/lib -undefined dynamic_lookup -lwebp -licudata -licui18n -licuio');
+    $p->setWorkDir(WORKSPACE.'/swoole-cli');
     $p->setExtraLdflags('-L/usr/lib -framework CoreFoundation -framework SystemConfiguration -undefined dynamic_lookup -lwebp -licudata -licui18n -licuio');
     $endCallback = function($p) {
         $makesh = file_get_contents(__DIR__.'/make.sh');
@@ -40,9 +40,15 @@ if ($type == 'macos') {
 
 function install_openssl(Preprocessor $p)
 {
+    global $type;
+    $configure = './config -static --static no-shared --prefix=/usr/openssl';
+    if($type == "macos"){
+        $configure = './config no-shared --prefix=/usr/openssl';
+    }
+
     $p->addLibrary((new Library('openssl'))
-        ->withUrl('https://www.openssl.org/source/openssl-1.1.1m.tar.gz')
-        ->withConfigure('./config -static --static no-shared --prefix=/usr/openssl')
+        ->withUrl('https://www.openssl.org/source/openssl-1.1.1p.tar.gz')
+        ->withConfigure($configure)
         ->withLdflags('-L/usr/openssl/lib')
         ->withPkgConfig('/usr/openssl/lib/pkgconfig')
         ->withLicense('https://github.com/openssl/openssl/blob/master/LICENSE.txt', Library::LICENSE_APACHE2)
@@ -91,7 +97,7 @@ function install_imagemagick(Preprocessor $p)
     $p->addLibrary(
         (new Library('imagemagick'))
             ->withUrl('https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.0-19.tar.gz')
-            ->withConfigure('./configure --prefix=/usr/imagemagick --with-zip=no --enable-static --disable-shared')
+            ->withConfigure('./configure --prefix=/usr/imagemagick --with-zip=no --enable-static --disable-shared  --with-fontconfig=no --with-heic=no --with-lcms=no --with-lqr=no --with-openexr=no --with-openjp2=no --with-pango=no --with-raw=no --with-tiff=no')
             ->withLdflags('-L/usr/imagemagick/lib')
             ->withPkgConfig('/usr/imagemagick/lib/pkgconfig')
             ->withPkgName('ImageMagick')
@@ -127,7 +133,9 @@ function install_giflib(Preprocessor $p)
     $p->addLibrary(
         (new Library('giflib'))
             ->withUrl('https://nchc.dl.sourceforge.net/project/giflib/giflib-5.2.1.tar.gz')
-            ->withMakeOptions('libgif.a')
+            ->withMakeOptions('libgif.a ')
+            ->withConfigure('patch -p0 < '.WORKSPACE."/swoole-cli/pool/lib/giflib.patch")
+            ->withMakeInstallOptions("PREFIX=/usr")
             ->withLicense('http://giflib.sourceforge.net/intro.html', Library::LICENSE_SPEC)
     );
 }
@@ -162,7 +170,7 @@ function install_freetype(Preprocessor $p)
 {
     $p->addLibrary(
         (new Library('freetype'))
-            ->withUrl('https://mirror.yongbok.net/nongnu/freetype/freetype-2.10.4.tar.gz')
+            ->withUrl('https://jaist.dl.sourceforge.net/project/freetype/freetype2/2.10.4/freetype-2.10.4.tar.gz')
             ->withConfigure('./configure --prefix=/usr/freetype --enable-static --disable-shared')
             ->withHomePage('https://freetype.org/')
             ->withLdflags('-L/usr/freetype/lib')
@@ -214,6 +222,7 @@ function install_bzip2(Preprocessor $p)
         (new Library('bzip2'))
             ->withUrl('https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz')
             ->withMakeOptions('PREFIX=/usr/bzip2')
+            ->withMakeInstallOptions('PREFIX=/usr/bzip2')
             ->withLdflags('-L/usr/bzip2/lib')
             ->withHomePage('https://www.sourceware.org/bzip2/')
             ->withLicense('https://www.sourceware.org/bzip2/', Library::LICENSE_BSD)
@@ -440,7 +449,7 @@ $extAvailabled = [
     'imagick' => function ($p) {
         $p->addExtension((new Extension('imagick'))
             ->withOptions('--with-imagick=/usr/imagemagick')
-            ->withPeclVersion('3.6.0')
+            ->withPeclVersion('3.7.0')
             ->withHomePage('https://github.com/Imagick/imagick')
             ->withLicense('https://github.com/Imagick/imagick/blob/master/LICENSE', Extension::LICENSE_PHP)
         );
@@ -448,7 +457,7 @@ $extAvailabled = [
     'redis' => function ($p) {
         $p->addExtension((new Extension('redis'))
             ->withOptions('--enable-redis')
-            ->withPeclVersion('5.3.5')
+            ->withPeclVersion('5.3.7')
             ->withHomePage('https://github.com/phpredis/phpredis')
             ->withLicense('https://github.com/phpredis/phpredis/blob/develop/COPYING', Extension::LICENSE_PHP)
         );
@@ -461,7 +470,7 @@ $extAvailabled = [
     'mongodb' => function ($p) {
         $p->addExtension((new Extension('mongodb'))
             ->withOptions('--enable-mongodb')
-            ->withPeclVersion('1.14.0'));
+            ->withPeclVersion('1.14.1'));
     }
 ];
 
@@ -473,6 +482,8 @@ $extEnabled = [
     'swoole',
     'yaml',
     'imagick',
+    //'inotify',
+    //'mongodb'
 ];
 
 for ($i = 1; $i < $argc; $i++) {
