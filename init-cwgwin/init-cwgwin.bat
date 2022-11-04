@@ -1,0 +1,2 @@
+@echo off
+setup-x86_64.exe -qgnO  -s http://mirrors.kernel.org/sourceware/cygwin/ -l C:\Users\MyPC\Downloads -R E:\swoole-cli-cgwin -a x86_64 -P "gcc-g++,gcc-core,libgcc+,bison,wget,autoconf,libtool,make,zip,libssl-devel,libcurl-devel,libxml2-devel,libxslt-devel,libgmp-devel,ImageMagick,libpng-devel,libjpeg-devellibfreetype-devel,libwebp-devel,libsqlite3-devel,zlib-devel,libbz2-devel,libzip2-devel,libicu-devel,libonig-devel,libcares-devel,libsodium-devel,libyaml-devel,libMagick-devel,libzip-devel"
